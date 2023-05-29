@@ -1,0 +1,33 @@
+--hisse senedi kıymet tablosu
+CREATE TABLE StockDefinitions (
+    StockID INT IDENTITY(1,1) PRIMARY KEY,
+    StockSymbol VARCHAR(10) NOT NULL,
+    CompanyName VARCHAR(100) NOT NULL,
+    StockType VARCHAR(50) NOT NULL,
+    );
+--müşteri tanımı tablosu
+CREATE TABLE CustomerDefinitions (
+    CustomerID INT IDENTITY(1,1) PRIMARY KEY,
+    CustomerName VARCHAR(100) NOT NULL,
+    );
+--HS alım satım işlem tablosu
+CREATE TABLE StockTransactions (
+    TransactionID INT IDENTITY(1,1) PRIMARY KEY,
+    StockID INT NOT NULL,
+    CustomerID INT NOT NULL,
+    TransactionType VARCHAR(50) NOT NULL,
+    Quantity INT NOT NULL,
+    Price DECIMAL(10, 2) NOT NULL,
+    TransactionDate DATE NOT NULL,
+    FOREIGN KEY (StockID) REFERENCES StockDefinitions(StockID),
+    FOREIGN KEY (CustomerID) REFERENCES CustomerDefinitions(CustomerID)
+);
+--HS Müşteri Stok Tablosu
+CREATE TABLE StockHoldings (
+    HoldingID INT IDENTITY(1,1) PRIMARY KEY,
+    StockID INT NOT NULL,
+    CustomerID INT NOT NULL,
+    Quantity INT NOT NULL,
+    FOREIGN KEY (StockID) REFERENCES StockDefinitions(StockID),
+    FOREIGN KEY (CustomerID) REFERENCES CustomerDefinitions(CustomerID)
+);
