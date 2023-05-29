@@ -1,0 +1,60 @@
+CREATE PROCEDURE PerformStockTransaction1
+    @StockID INT,
+    @CustomerID INT,
+    @TransactionType VARCHAR(50),
+    @Quantity INT,
+    @Price DECIMAL(10, 2),
+    @TransactionDate DATE
+AS
+BEGIN
+    DECLARE @StockQuantity INT;
+
+    -- Stok miktarını kontrol et
+    SELECT @StockQuantity = Quantity
+    FROM StockHoldings
+    WHERE StockID = @StockID AND CustomerID = @CustomerID;
+
+    IF @StockQuantity >= @Quantity
+    BEGIN
+        -- Stokta yeterli miktar var, stok azaltma işlemi gerçekleştir
+        UPDATE StockHoldings
+        SET Quantity = Quantity - @Quantity
+        WHERE StockID = @StockID AND CustomerID = @CustomerID;
+
+        -- Alış-satış işlemi kaydını ekle
+        INSERT INTO StockTransactions (StockID, CustomerID, TransactionType, Quantity, Price, TransactionDate)
+        VALUES (@StockID, @CustomerID, @TransactionType, @Quantity, @Price, @TransactionDate);
+
+        PRINT 'İşlem başarıyla gerçekleştirildi.';
+    END
+    ELSE
+    BEGIN
+        -- Stokta yeterli miktar yok, hata mesajı döndür
+        THROW 50001, 'Stokta yeterli miktarda ürün bulunmamaktadır.', 1;
+    END
+END;
+
+--bu prosedürü çağırmak için ve veriler veritabanından çekmek için :
+
+
+DECLARE @StockID INT;
+DECLARE @CustomerID INT;
+DECLARE @TransactionType VARCHAR(50) = 'Buy'; -- Alış veya satış işlemi
+DECLARE @Quantity INT = 10; -- İşlem miktarı
+DECLARE @Price DECIMAL(10, 2) = 100.00; -- İşlem fiyatı
+DECLARE @TransactionDate DATE = GETDATE(); -- İşlem tarihi
+
+-- Veritabanından stok ID'si alınması
+SELECT TOP 1 @StockID = StockID
+FROM StockDefinitions;
+
+-- Veritabanından müşteri ID'si alınması
+SELECT TOP 1 @CustomerID = CustomerID
+FROM CustomerDefinitions;
+
+BEGIN TRY
+    EXEC PerformStockTransaction1 @StockID, @CustomerID, @TransactionType, @Quantity, @Price, @TransactionDate;
+END TRY
+BEGIN CATCH
+    PRINT 'Hata: ' + ERROR_MESSAGE();
+END CATCH;
