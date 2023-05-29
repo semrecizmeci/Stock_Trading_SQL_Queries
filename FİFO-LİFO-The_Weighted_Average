@@ -1,0 +1,22 @@
+--FIFO (First-In-First-Out):
+SELECT sh.CustomerID, sh.StockID, SUM(sh.Quantity) AS TotalQuantity, SUM(sh.Quantity * st.Price) AS TotalCost
+FROM StockHoldings sh
+INNER JOIN StockTransactions st ON sh.StockID = st.StockID AND sh.CustomerID = st.CustomerID
+WHERE st.TransactionType = 'Buy' AND st.TransactionDate <= GETDATE()
+GROUP BY sh.CustomerID, sh.StockID, st.TransactionDate
+ORDER BY st.TransactionDate ASC;
+
+--LIFO (Last-In-First-Out):
+SELECT sh.CustomerID, sh.StockID, SUM(sh.Quantity) AS TotalQuantity, SUM(sh.Quantity * st.Price) AS TotalCost
+FROM StockHoldings sh
+INNER JOIN StockTransactions st ON sh.StockID = st.StockID AND sh.CustomerID = st.CustomerID
+WHERE st.TransactionType = 'Buy' AND st.TransactionDate <= GETDATE()
+GROUP BY sh.CustomerID, sh.StockID ,st.TransactionDate
+ORDER BY st.TransactionDate DESC	
+
+--Ağırlıklı Ortalama:
+SELECT sh.CustomerID, sh.StockID, SUM(sh.Quantity) AS TotalQuantity, SUM(sh.Quantity * st.Price) / SUM(sh.Quantity) AS AverageCost
+FROM StockHoldings sh
+INNER JOIN StockTransactions st ON sh.StockID = st.StockID AND sh.CustomerID = st.CustomerID
+WHERE st.TransactionType = 'Buy' AND st.TransactionDate <= GETDATE()
+GROUP BY sh.CustomerID, sh.StockID;
